@@ -1,34 +1,71 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#323437"><meta name="description" content="The quiet kind of competitive. A minimal, 30-second multiplayer typing race with smooth shared cursors."><title>multitype — a little friendly competition</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23323437'/%3E%3Cpath d='M16 20v24m16-31v31m16-18v18' stroke='%23e2b714' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E"><link rel="stylesheet" href="/style.css"></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#323437">
+  <meta name="description" content="Multiplayer typing. 30-second races with shared cursors.">
+  <title>lennytype</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23323437'/%3E%3Cpath d='M16 20v24m16-31v31m16-18v18' stroke='%23e2b714' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+</head>
 <body>
-<div class="shell">
-<header>
- <a href="/" class="brand" aria-label="multitype home"><svg viewBox="0 0 40 32" aria-hidden="true"><rect x="1.5" y="3.5" width="37" height="25" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M8 11h2m6 0h2m6 0h2m6 0h0M8 17h2m6 0h2m6 0h2m6 0h0M11 23h18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><span><small>a little friendly competition</small>multitype<span class="brand-dot">.</span></span></a>
- <nav aria-label="Game mode"><button id="raceMode" class="nav-button active"><span data-icon="users"></span>race</button><button id="practiceMode" class="nav-button"><span data-icon="keyboard"></span>practice</button></nav>
- <div class="header-right"><button id="settingsButton" class="icon-button" title="Settings" aria-label="Settings"><span data-icon="settings"></span></button><button id="profileButton" class="profile-button" title="Change your name"><span class="avatar">y</span><span id="profileName">you</span></button></div>
-</header>
-<main>
- <div class="mode-strip"><span id="modeLabel"><span class="live-dot"></span>live race</span><i></i><span><span data-icon="clock"></span>30 seconds</span><i></i><span><span data-icon="globe"></span>english</span></div>
- <section id="game" aria-label="Typing race">
-  <div class="race-meta"><div id="roomStatus"><span class="live-dot"></span><span id="roomLabel">finding your lobby</span><span id="playerCount" class="muted"></span></div><button id="roomButton" class="text-button"><span data-icon="link"></span>invite friends<span class="arrow">↗</span></button></div>
-  <div class="test-top"><div class="timer"><span id="timeLeft">30</span><span id="timerUnit">s</span></div><div id="liveStats" class="live-stats" hidden><span id="liveWpm">0</span> wpm<span class="stats-dot">·</span><span id="liveAccuracy">100</span>%</div><span id="raceStatus">make yourself comfortable</span></div>
-  <div id="typingArea" tabindex="0" role="group" aria-label="Typing area. Type the displayed words. Press Enter to start a race.">
-   <div id="wordViewport"><div id="wordTrack"><div id="words" aria-hidden="true"></div><div id="carets" aria-hidden="true"></div></div></div>
-   <textarea id="typingInput" aria-label="Type the words here" autocomplete="off" autocapitalize="off" spellcheck="false" autocorrect="off"></textarea>
-   <div id="focusHint"><span data-icon="pointer"></span>click here to focus</div>
+  <div class="shell">
+    <header>
+      <a href="./" class="brand" aria-label="lennytype home">lennytype</a>
+      <div class="header-controls">
+        <button id="profileButton" class="text-button" title="Change name">you</button>
+        <button id="settingsButton" class="icon-button" aria-label="Settings"><span data-icon="settings"></span></button>
+      </div>
+    </header>
+    <main>
+      <section id="home" aria-label="Rooms">
+        <button id="createRoom" class="home-button">create room</button>
+        <button id="browseRooms" class="home-button">join room</button>
+      </section>
+      <section id="game" aria-label="Typing race" hidden>
+        <div class="room-bar">
+          <div class="room-details"><button id="copyCode" class="room-code" title="Copy room link"><span id="roomCode"></span><span data-icon="copy"></span></button><span id="playerCount"></span></div>
+          <button id="leaveRoom" class="text-button">leave</button>
+        </div>
+        <div class="test-top"><span id="timeLeft" class="timer" hidden>30</span><span id="liveStats" hidden><span id="liveWpm">0</span> wpm <span class="muted">·</span> <span id="liveAccuracy">100</span>%</span></div>
+        <div id="waitingArea"><button id="startButton" class="text-button">start race</button></div>
+        <div id="typingArea" tabindex="0" role="group" aria-label="Type the displayed words" hidden>
+          <div id="wordViewport"><div id="wordTrack"><div id="words" aria-hidden="true"></div></div></div>
+          <div id="carets" aria-hidden="true"></div>
+          <textarea id="typingInput" aria-label="Type the words here" autocomplete="off" autocapitalize="off" spellcheck="false" autocorrect="off"></textarea>
+          <div id="focusHint">click to focus</div>
+        </div>
+        <div id="timeTrack" class="time-track" hidden><div id="timeProgress"></div></div>
+        <section id="results" aria-label="Race results" hidden>
+          <div class="result-numbers"><div><small>wpm</small><strong id="resultWpm">0</strong></div><div><small>accuracy</small><strong id="resultAccuracy">100<span>%</span></strong></div><div><small>place</small><strong id="resultPlace">1<span>/1</span></strong></div></div>
+          <div id="leaderboard"></div>
+          <button id="againButton" class="text-button">race again</button>
+        </section>
+        <div id="playerList" aria-label="Players"></div>
+      </section>
+    </main>
   </div>
-  <div class="time-track"><div id="timeProgress"></div></div>
-  <div id="raceAction" class="race-action"><button id="startButton"><span data-icon="play"></span><span id="startLabel">start race</span><kbd>enter</kbd></button><span id="actionHint">or just start typing</span></div>
-  <section id="results" aria-label="Race results" hidden><div class="result-heading"><span id="resultTitle">nicely done.</span><span>30 seconds, well spent</span></div><div class="result-numbers"><div><small>wpm</small><strong id="resultWpm">0</strong></div><div><small>accuracy</small><strong id="resultAccuracy">100<span>%</span></strong></div><div><small>characters</small><strong id="resultChars">0</strong></div><div><small>place</small><strong id="resultPlace">1<span>/1</span></strong></div></div><div id="leaderboard"></div><button id="againButton" class="primary-button"><span data-icon="restart"></span>race again<kbd>enter</kbd></button></section>
-  <div id="playersSection"><div class="players-heading"><span id="playersHeading">at the starting line</span><span id="playersNote">up to 8 typists · no distractions</span></div><div id="playerList"></div><div id="inviteHint"><span>better together.</span> send a friend your room link <button id="copyInvite" aria-label="Copy room link"><span data-icon="copy"></span></button></div></div>
- </section>
- <div class="shortcuts"><span><kbd>tab</kbd><span>+</span><kbd>enter</kbd>restart</span><span><kbd>esc</kbd>take a breath</span></div>
-</main>
-<footer><div><span class="footer-mark" data-icon="users"></span>same words. same time. your own rhythm.</div><div><button id="aboutButton">inspired by monkeytype<span class="arrow">↗</span></button><button id="themeButton" title="Switch theme"><span data-icon="palette"></span><span id="themeName">serika dark</span></button></div></footer>
-</div>
-<dialog id="roomDialog"><form method="dialog" class="dialog-header"><span>better together<span class="yellow">.</span></span><button aria-label="Close dialog" class="icon-button">×</button></form><p>Same words. Thirty seconds. Your people.</p><label for="nickname">your name</label><input id="nickname" maxlength="16" placeholder="a mysterious typist" autocomplete="nickname"><div id="currentRoom" class="room-code-box" hidden><span>your room</span><strong id="dialogRoomCode"></strong><button id="dialogCopy" class="icon-button" aria-label="Copy invite link"><span data-icon="copy"></span></button></div><button id="createRoom" class="primary-button"><span data-icon="plus"></span>create a private room</button><div class="or-divider"><span>or join your friends</span></div><label for="joinCode">room code</label><div class="join-row"><input id="joinCode" maxlength="6" placeholder="ABC123" autocomplete="off"><button id="joinRoom" class="primary-button">join<span class="arrow">→</span></button></div><p id="roomError" class="error-message" role="alert"></p><p class="dialog-note">Anyone with the link can join your room.</p></dialog>
-<dialog id="settingsDialog"><form method="dialog" class="dialog-header"><span>the little things<span class="yellow">.</span></span><button aria-label="Close dialog" class="icon-button">×</button></form><div class="setting-row"><div><label for="smoothSetting">smooth cursors</label><p>a little flow for every keystroke</p></div><input type="checkbox" role="switch" id="smoothSetting" checked></div><div class="setting-row"><div><label for="statsSetting">live stats</label><p>your speed and accuracy as you type</p></div><input type="checkbox" role="switch" id="statsSetting" checked></div><div class="setting-row"><div><label for="themeSelect">theme</label><p>make yourself at home</p></div><select id="themeSelect"><option value="serika">serika dark</option><option value="midnight">midnight</option><option value="paper">paper</option></select></div><p class="dialog-note">Your preferences stay on this device.</p></dialog>
-<dialog id="aboutDialog"><form method="dialog" class="dialog-header"><span>less UI. more flow<span class="yellow">.</span></span><button aria-label="Close dialog" class="icon-button">×</button></form><p>multitype brings the familiar Monkeytype typing experience to a shared, 30-second race. Everyone gets the same words. Every cursor is a real person.</p><p>Built with Monkeytype’s English word list and its caret behavior as a reference. Monkeytype is free and open source, made by Miodec and its contributors.</p><a href="https://github.com/monkeytypegame/monkeytype" target="_blank" rel="noreferrer" class="text-link">Monkeytype on GitHub ↗</a><p class="dialog-note">Licensed under <a href="/LICENSE" target="_blank" rel="noreferrer">GPL-3.0</a> · <a href="/THIRD_PARTY_NOTICES.md" target="_blank" rel="noreferrer">third-party notices</a><br>Independent project; not affiliated with Monkeytype.</p></dialog>
-<div id="toast" role="status"></div>
-<script src="/app.js" defer></script>
-</body></html>
+  <dialog id="joinDialog">
+    <form method="dialog" class="dialog-header"><span>join room</span><button aria-label="Close" class="icon-button">×</button></form>
+    <form id="joinForm" class="join-row"><input id="joinCode" aria-label="Room code" maxlength="6" placeholder="room code" autocomplete="off"><button class="text-button" type="submit">join</button></form>
+    <div class="room-list-heading"><span>rooms</span><button id="refreshRooms" class="icon-button" aria-label="Refresh rooms"><span data-icon="refresh"></span></button></div>
+    <div id="roomList" role="list" aria-label="Available rooms"></div>
+    <p id="roomError" class="error-message" role="alert"></p>
+  </dialog>
+  <dialog id="profileDialog">
+    <form method="dialog" class="dialog-header"><span>name</span><button aria-label="Close" class="icon-button">×</button></form>
+    <form id="nameForm"><input id="nickname" aria-label="Name" maxlength="16" placeholder="you" autocomplete="nickname"><button class="text-button save-name" type="submit">save</button></form>
+  </dialog>
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog-header"><span>settings</span><button aria-label="Close" class="icon-button">×</button></form>
+    <div class="setting-row"><label for="smoothSetting">smooth cursors</label><input type="checkbox" role="switch" id="smoothSetting" checked></div>
+    <div class="setting-row"><label for="statsSetting">live stats</label><input type="checkbox" role="switch" id="statsSetting" checked></div>
+    <div class="setting-row"><label for="themeSelect">theme</label><select id="themeSelect"><option value="serika">serika dark</option><option value="midnight">midnight</option><option value="paper">paper</option></select></div>
+    <div class="credits"><a href="./THIRD_PARTY_NOTICES.md" target="_blank" rel="noreferrer">credits</a><a href="./LICENSE" target="_blank" rel="noreferrer">GPL-3.0</a></div>
+  </dialog>
+  <div id="toast" role="status"></div>
+  <script src="./config.js"></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>

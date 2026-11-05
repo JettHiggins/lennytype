@@ -1,37 +1,35 @@
-# multitype
+# lennytype
 
-A minimal multiplayer typing game inspired by Monkeytype. Thirty-second races, identical words for all players, and smooth colored cursors. No accounts, cars, or distractions.
+Multiplayer typing with smooth shared cursors. Create a room, join one from the list or by code, and race for 30 seconds. Up to eight people. Rooms stay blank until the race starts. Anyone can leave at any time.
 
-## Run locally
+## Local development
 
-Requires Node.js 22.13 or newer. No dependencies to install.
+Node.js 22.13 or newer. No dependencies to install.
 
 ```sh
 npm run dev
 ```
 
-Open http://localhost:3000. Open the same room link in another browser or device to race together. On your local network, replace `localhost` with your computer's IP address. Local state is kept in `.local/multitype.sqlite`.
+Open http://localhost:3000 in two browsers. Create a room in one, then select it from **join room** in the other. The host starts the race. Click the room code to copy its invite link.
 
-## Play
-
-- **Race:** join the public lobby, or use **invite friends** to create a private room or enter a six-character room code. Up to eight players per room. The host starts a shared three-second countdown followed by a 30-second race.
-- **Practice:** start typing for an immediate solo test.
-- Correct mistakes with Backspace. Ctrl/Option+Backspace clears the current word. Space submits a word; an incorrect previous word can be revisited with Backspace.
-- Enter starts a race or rematch. Tab+Enter restarts practice. Escape releases focus. Shared races always run the full 30 seconds.
-- Settings control smooth cursors, live stats, and three themes. Names and preferences stay in your browser.
-
-Players' positions are synchronized through the backend, with cursor transitions between updates. Disconnected players leave after 12 seconds; the next active player becomes host. There are no simulated opponents. Room membership is limited to players with a live session token. Room links grant room access, so share them with the people you want to race.
-
-## Build and hosting
+Names, themes, cursor smoothness, and live stats are in the header controls. Enter starts a race or rematch. Backspace corrects mistakes; Ctrl/Option+Backspace clears the current word. Escape releases typing focus. Shared timers keep running when someone leaves.
 
 ```sh
-npm run build
 npm test
+npm run build
 ```
 
-The build embeds the frontend, font, and English dictionary into `dist/server/index.js`, a Cloudflare Worker. Production uses a D1 `DB` binding and the migration in `drizzle/`. The local server uses Node's SQLite adapter for the same SQL and Worker API. `.openai/hosting.json` contains the Sites project and binding declaration.
+The static build is in `dist/pages`. Local SQLite state is in `.local/lennytype.sqlite`.
 
-This is a casual race game. Scores are client reported and are not suitable for ranked or prize-based competition without server-side input validation and anti-cheat work. The hosted Site is accessible to anyone with its link.
+## Hosting
+
+See [docs/HOSTING.md](docs/HOSTING.md) for GitHub Pages deployment, your own multiplayer backend, and removing the previous ChatGPT Site. The frontend uses relative asset URLs, so it works at both `username.github.io/` and `username.github.io/lennytype/`.
+
+GitHub Pages serves the frontend. The multiplayer API runs separately as a Cloudflare Worker with a D1 database. There is no dependency on ChatGPT Sites in the new build. `docs/previous-sites-hosting.json` records the old Site ID only; it is not used by any build or deployment.
+
+The GitHub workflow uses the repository variable `LENNYTYPE_API_URL` for the API origin. It contains no secret. The backend accepts cross-origin requests only from the exact origins configured in `ALLOWED_ORIGINS`. Players authenticate with per-room session tokens.
+
+This is a casual game: scores are client reported. Rooms with no active players disappear from the list; the last player leaving deletes the room. Inactive players time out after 12 seconds, and an active player inherits the host role.
 
 ## License
 

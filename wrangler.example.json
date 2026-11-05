@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lennytype-api",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-11-05",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGINS": "https://jetthiggins.github.io"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lennytype",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}

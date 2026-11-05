@@ -1,14 +1,19 @@
-import {readFile, mkdir, writeFile, cp} from 'node:fs/promises';
-const html = await readFile('public/index.html','utf8');
-const css = await readFile('public/style.css','utf8');
-const js = await readFile('public/app.js','utf8');
-const page=html.replace('<link rel="stylesheet" href="/style.css">',`<style>${css}</style>`).replace('<script src="/app.js" defer></script>',`<script>${js}</script>`);
-const assets={'/english.json':{body:await readFile('public/english.json','utf8'),type:'application/json'},'/RobotoMono-Regular.woff2':{body:(await readFile('public/RobotoMono-Regular.woff2')).toString('base64'),type:'font/woff2',encoding:'base64'}};
-for(const [url,file] of [['/LICENSE','LICENSE'],['/THIRD_PARTY_NOTICES.md','THIRD_PARTY_NOTICES.md'],['/RobotoMono-LICENSE.txt','public/RobotoMono-LICENSE.txt']])assets[url]={body:await readFile(file,'utf8'),type:'text/plain;charset=utf-8'};
-const source=(await readFile('worker/index.js','utf8')).replace('/* PAGE */ null',JSON.stringify(page)).replace('/* ASSETS */ {}',JSON.stringify(assets));
-await mkdir('dist/server',{recursive:true});
-await mkdir('dist/.openai',{recursive:true});
-await writeFile('dist/server/index.js',source);
-await cp('.openai/hosting.json','dist/.openai/hosting.json');
-await cp('drizzle','dist/.openai/drizzle',{recursive:true});
-console.log('Built multitype Worker and database migration.');
+import {cp, mkdir, rm, writeFile} from 'node:fs/promises';
+const apiBase = (process.env.LENNYTYPE_API_URL || '').replace(/\/$/, '');
+if (apiBase) {
+  const url = new URL(apiBase);
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost','127.0.0.1'].includes(url.hostname))) {
+    throw new Error('LENNYTYPE_API_URL must use HTTPS (or HTTP on localhost).');
+  }
+  if (url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
+    throw new Error('LENNYTYPE_API_URL must be an origin, such as https://lennytype-api.example.workers.dev');
+  }
+}
+await rm('dist/pages', {recursive:true, force:true});
+await mkdir('dist/pages', {recursive:true});
+await cp('public', 'dist/pages', {recursive:true});
+for (const file of ['LICENSE','THIRD_PARTY_NOTICES.md']) await cp(file, `dist/pages/${file}`);
+await writeFile('dist/pages/config.js', `window.LENNYTYPE_CONFIG = ${JSON.stringify({apiBase})};\n`);
+await writeFile('dist/pages/.nojekyll', '');
+console.log('Built GitHub Pages frontend in dist/pages.');
+if (!apiBase) console.log('No multiplayer API URL set. Same-origin API will be used locally.');
