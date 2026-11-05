@@ -26,10 +26,13 @@ export default {async fetch(request,env){
   else if(!body.private){room=await db.prepare('SELECT r.* FROM rooms r WHERE r.public=1 AND r.starts_at=0 AND r.created_at>? AND (SELECT COUNT(*) FROM players p WHERE p.room=r.code AND p.seen_at>?) BETWEEN 1 AND 7 ORDER BY r.created_at LIMIT 1').bind(now-3600000,now-12000).first()}
   const id=crypto.randomUUID();const token=crypto.randomUUID();
   if(!room){code=crypto.randomUUID().replace(/-/g,'').slice(0,6).toUpperCase();room={code,public:body.private?0:1,host:id,seed:Math.floor(Math.random()*2147483647),starts_at:0};await db.prepare('INSERT INTO rooms(code,public,host,seed,created_at) VALUES(?,?,?,?,?)').bind(code,room.public,id,room.seed,now).run()}
-  const {results:active}=await db.prepare('SELECT color FROM players WHERE room=? AND seen_at>?').bind(room.code,now-12000).all();
-  if(active.length>=8)fail('This room is full. Try another room.',409);
-  const color=Array.from({length:8},(_,i)=>i).find(i=>!active.some(p=>p.color===i));
-  await db.prepare('INSERT INTO players(id,room,token,name,color,seen_at) VALUES(?,?,?,?,?,?)').bind(id,room.code,token,cleanName(body.name),color,now).run();
+  // Assign the free color and insert atomically, including simultaneous joins.
+  const inserted=await db.prepare(`INSERT INTO players(id,room,token,name,color,seen_at)
+   SELECT ?,?,?,?,slots.color,? FROM
+   (SELECT 0 AS color UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7) AS slots
+   WHERE NOT EXISTS (SELECT 1 FROM players WHERE room=? AND color=slots.color AND seen_at>?) ORDER BY slots.color LIMIT 1`)
+   .bind(id,room.code,token,cleanName(body.name),now,room.code,now-12000).run();
+  if(!inserted.meta.changes)fail('This room is full. Try another room.',409);
   return json({id,token,...await state(db,room.code)});
  }
  const code=String(body.room||'');
