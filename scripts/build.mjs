@@ -1,0 +1,14 @@
+import {readFile, mkdir, writeFile, cp} from 'node:fs/promises';
+const html = await readFile('public/index.html','utf8');
+const css = await readFile('public/style.css','utf8');
+const js = await readFile('public/app.js','utf8');
+const page=html.replace('<link rel="stylesheet" href="/style.css">',`<style>${css}</style>`).replace('<script src="/app.js" defer></script>',`<script>${js}</script>`);
+const assets={'/english.json':{body:await readFile('public/english.json','utf8'),type:'application/json'},'/RobotoMono-Regular.woff2':{body:(await readFile('public/RobotoMono-Regular.woff2')).toString('base64'),type:'font/woff2',encoding:'base64'}};
+for(const [url,file] of [['/LICENSE','LICENSE'],['/THIRD_PARTY_NOTICES.md','THIRD_PARTY_NOTICES.md'],['/RobotoMono-LICENSE.txt','public/RobotoMono-LICENSE.txt']])assets[url]={body:await readFile(file,'utf8'),type:'text/plain;charset=utf-8'};
+const source=(await readFile('worker/index.js','utf8')).replace('/* PAGE */ null',JSON.stringify(page)).replace('/* ASSETS */ {}',JSON.stringify(assets));
+await mkdir('dist/server',{recursive:true});
+await mkdir('dist/.openai',{recursive:true});
+await writeFile('dist/server/index.js',source);
+await cp('.openai/hosting.json','dist/.openai/hosting.json');
+await cp('drizzle','dist/.openai/drizzle',{recursive:true});
+console.log('Built multitype Worker and database migration.');
