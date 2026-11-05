@@ -1,5 +1,5 @@
 import {cp, mkdir, rm, writeFile} from 'node:fs/promises';
-const apiBase = (process.env.LENNYTYPE_API_URL || '').replace(/\/$/, '');
+const apiBase = (process.env.LENNYTYPE_API_URL || 'https://lennytype-api.lennytype.workers.dev').replace(/\/$/, '');
 if (apiBase) {
   const url = new URL(apiBase);
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost','127.0.0.1'].includes(url.hostname))) {
@@ -16,4 +16,3 @@ for (const file of ['LICENSE','THIRD_PARTY_NOTICES.md']) await cp(file, `dist/pa
 await writeFile('dist/pages/config.js', `window.LENNYTYPE_CONFIG = ${JSON.stringify({apiBase})};\n`);
 await writeFile('dist/pages/.nojekyll', '');
 console.log('Built GitHub Pages frontend in dist/pages.');
-if (!apiBase) console.log('No multiplayer API URL set. Same-origin API will be used locally.');

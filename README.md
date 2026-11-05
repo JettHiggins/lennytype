@@ -27,7 +27,7 @@ See [docs/HOSTING.md](docs/HOSTING.md) for GitHub Pages deployment, your own mul
 
 GitHub Pages serves the frontend. The multiplayer API runs separately as a Cloudflare Worker with a D1 database. There is no dependency on ChatGPT Sites in the new build. `docs/previous-sites-hosting.json` records the old Site ID only; it is not used by any build or deployment.
 
-The GitHub workflow uses the repository variable `LENNYTYPE_API_URL` for the API origin. It contains no secret. The backend accepts cross-origin requests only from the exact origins configured in `ALLOWED_ORIGINS`. Players authenticate with per-room session tokens.
+The Pages build uses `https://lennytype-api.lennytype.workers.dev` by default. The optional repository variable `LENNYTYPE_API_URL` overrides that public API origin. Local development still uses the local API. The backend accepts cross-origin requests only from the exact origins configured in `ALLOWED_ORIGINS`. Players authenticate with per-room session tokens.
 
 This is a casual game: scores are client reported. Rooms with no active players disappear from the list; the last player leaving deletes the room. Inactive players time out after 12 seconds, and an active player inherits the host role.
 

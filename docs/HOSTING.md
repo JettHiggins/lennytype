@@ -30,7 +30,7 @@ npx wrangler@4 d1 migrations apply lennytype --remote --config wrangler.json
 npx wrangler@4 deploy --config wrangler.json
 ```
 
-Wrangler prints your Worker URL, such as `https://lennytype-api.YOUR_SUBDOMAIN.workers.dev`. Keep that URL for the next step. Use only the origin, without `/api` or a trailing slash.
+The deployed Worker is `https://lennytype-api.lennytype.workers.dev`. This public URL is already configured as the default for the Pages build. If you deploy under a different address, use the optional override described below.
 
 `wrangler.json` is ignored by Git so account-specific deployment settings stay local. The database and room state are new; no data or credentials from the previous ChatGPT Site are needed.
 
@@ -54,13 +54,11 @@ If an `origin` remote already exists, check `git remote -v` first and use `git r
 
 In the GitHub repository:
 
-1. Open **Settings → Secrets and variables → Actions → Variables**.
-2. Add `LENNYTYPE_API_URL` with the Worker origin from step 1. This URL is public configuration, so use a repository variable, not a secret.
-3. Open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**.
-4. Open **Actions → Deploy lennytype to GitHub Pages → Run workflow**. Future pushes to `main` deploy automatically.
-5. Open the URL shown by the deployment, usually `https://jetthiggins.github.io/lennytype/`.
+1. Open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**.
+2. Open **Actions → Deploy lennytype to GitHub Pages → Run workflow**. Future pushes to `main` deploy automatically.
+3. Open the URL shown by the deployment, usually `https://jetthiggins.github.io/lennytype/`.
 
-The workflow deliberately fails if `LENNYTYPE_API_URL` is missing, rather than publishing a multiplayer UI with nowhere to connect.
+No repository variable is required for the deployed backend above. To use a different backend later, add `LENNYTYPE_API_URL` under **Settings → Secrets and variables → Actions → Variables** with its origin, without `/api` or a trailing slash. The URL is public configuration, not a secret.
 
 Reference: [GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
