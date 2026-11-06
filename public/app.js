@@ -154,6 +154,7 @@ function renderPlayers() {
   }).join('');
 }
 function showRoomState() {
+  $('restartButton').hidden = state !== 'racing';
   $('home').hidden = true;
   $('game').hidden = false;
   $('roomCode').textContent = room.code;
@@ -184,6 +185,10 @@ function applyState(data) {
     if (state === 'racing') beginRacing();
   }
   showRoomState();
+  const votes = data.restartVotes || [];
+  $('restartButton').hidden = state !== 'racing';
+  $('restartButton').disabled = votes.includes(session.id);
+  $('restartButton').textContent = votes.length ? `restart ${votes.length}/${players.length}${votes.includes(session.id) ? ' · requested' : ' · request'}` : 'request restart';
   updateCarets();
   if (state === 'finished') renderResults();
 }
@@ -305,6 +310,8 @@ async function start() {
   finally { starting = false; if (session?.id === id) showRoomState(); }
 }
 function beginRacing() {
+  $('restartButton').disabled = false;
+  $('restartButton').textContent = 'request restart';
   state = 'racing';
   showRoomState();
   $('typingArea').classList.remove('unfocused');
@@ -321,7 +328,7 @@ function renderResults() {
   $('resultPlace').innerHTML = `${rank || 1}<span>/${list.length}</span>`;
   $('leaderboard').innerHTML = list.length > 1 ? list.map((p,i) => `<div class="leader-row"><span class="leader-rank">${i+1}</span><span class="player-dot" style="--player:${COLORS[p.color % 8]}"></span><span class="leader-name">${escapeHTML(p.name)}</span><span class="leader-score">${Math.round(p.correct / 2.5)} wpm</span></div>`).join('') : '';
   $('againButton').disabled = room.host !== session.id || starting;
-  $('againButton').textContent = room.host === session.id ? 'race again' : 'waiting for host';
+  $('againButton').textContent = room.host === session.id ? 'play again →' : 'waiting for host to play again';
 }
 function finish() {
   state = 'finished';
@@ -369,6 +376,11 @@ $('joinForm').onsubmit = e => {
   if (!/^[A-Z0-9]{6}$/.test(code)) { $('roomError').textContent = 'Enter a 6-character room code.'; return; }
   enterRoom('join', {code});
 };
+$('restartButton').onclick = async () => {
+  const id = session?.id;
+  try { const data = await api('restart', {...credentials(),round:startAt}); if(session?.id === id) applyState(data); }
+  catch(error) { toast(error.message); }
+};
 $('leaveRoom').onclick = leaveRoom;
 $('copyCode').onclick = copyRoomLink;
 $('startButton').onclick = start;
@@ -382,7 +394,7 @@ $('nameForm').onsubmit = async e => {
     if (session) applyState(await api('name', {...credentials(), name:name === 'you' ? anonymousName : name}));
     nickname = name;
     try { localStorage.setItem('lennytype.name', nickname); } catch {}
-    $('profileButton').textContent = nickname;
+    $('profileButton').textContent = `name: ${nickname} ✎`;
     lastPlayerSignature = '';
     renderPlayers();
     $('profileDialog').close();
@@ -435,7 +447,7 @@ window.addEventListener('pagehide', () => {
 });
 async function init() {
   applySettings();
-  $('profileButton').textContent = nickname;
+  $('profileButton').textContent = `name: ${nickname} ✎`;
   $('createRoom').disabled = true;
   try {
     const response = await fetch('./english.json');

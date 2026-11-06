@@ -14,7 +14,15 @@ async function state(db, code) {
     room.host = players[0].id;
     await db.prepare('UPDATE rooms SET host=? WHERE code=?').bind(room.host, code).run();
   }
-  return {room, players, now:Date.now()};
+  const {results:votes} = await db.prepare('SELECT player_id FROM restart_votes WHERE room=? AND round=?').bind(code,room.starts_at).all();
+  const voters = votes.map(v => v.player_id).filter(id => players.some(p => p.id === id));
+  if (room.starts_at && Date.now() >= room.starts_at && Date.now() < room.starts_at + 30000 && players.length && players.every(p => voters.includes(p.id))) {
+    const next = Date.now() + 3000;
+    const updated = await db.prepare('UPDATE rooms SET starts_at=?,seed=? WHERE code=? AND starts_at=?').bind(next,Math.floor(Math.random()*2147483647),code,room.starts_at).run();
+    if (updated.meta.changes) await db.batch([db.prepare('UPDATE players SET position=0,correct=0,attempts=0 WHERE room=?').bind(code),db.prepare('DELETE FROM restart_votes WHERE room=?').bind(code)]);
+    return state(db,code);
+  }
+  return {room, players, restartVotes:voters, now:Date.now()};
 }
 async function addPlayer(db, room, name) {
   const id = crypto.randomUUID();
@@ -68,7 +76,11 @@ async function handle(request, env) {
   }
   let room = await db.prepare('SELECT * FROM rooms WHERE code=?').bind(code).first();
   if (!room) fail('Room not found.', 404);
-  if (url.pathname === '/api/start') {
+  if (url.pathname === '/api/restart') {
+    if (!room.starts_at || now < room.starts_at || now >= room.starts_at + 30000) fail('Restart voting is available during a race.',409);
+    if (body.round !== room.starts_at) fail('This race has already changed.',409);
+    await db.prepare('INSERT OR IGNORE INTO restart_votes(room,player_id,round) VALUES(?,?,?)').bind(code,player.id,room.starts_at).run();
+  } else if (url.pathname === '/api/start') {
     await state(db, code);
     room = await db.prepare('SELECT * FROM rooms WHERE code=?').bind(code).first();
     if (room.host !== player.id) fail('Only the host can start.', 403);

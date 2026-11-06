@@ -1,5 +1,7 @@
 # lennytype
 
+**[Play lennytype →](https://jetthiggins.github.io/lennytype/)**
+
 Multiplayer typing with smooth shared cursors. Create a room, join one from the list or by code, and race for 30 seconds. Up to eight people. Rooms stay blank until the race starts. Anyone can leave at any time.
 
 ## Local development
@@ -34,3 +36,5 @@ This is a casual game: scores are client reported. Rooms with no active players 
 ## License
 
 GPL-3.0. Includes Monkeytype's English word list and Roboto Mono. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+During a race, **request restart** casts your vote. When every active player votes, everyone gets a new countdown and fresh race.

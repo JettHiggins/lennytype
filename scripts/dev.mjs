@@ -9,6 +9,7 @@ sqlite.exec('PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;');
 if (!sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='rooms'").get()) {
   sqlite.exec(readFileSync('drizzle/0000_rooms.sql', 'utf8'));
 }
+sqlite.exec(readFileSync('drizzle/0001_restart_votes.sql', 'utf8'));
 function prepare(sql) {
   let args = [];
   return {

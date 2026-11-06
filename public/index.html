@@ -14,7 +14,7 @@
     <header>
       <a href="./" class="brand" aria-label="lennytype home">lennytype</a>
       <div class="header-controls">
-        <button id="profileButton" class="text-button" title="Change name">you</button>
+        <button id="profileButton" class="text-button" title="Change name">name: you ✎</button>
         <button id="settingsButton" class="icon-button" aria-label="Settings"><span data-icon="settings"></span></button>
       </div>
     </header>
@@ -26,7 +26,7 @@
       <section id="game" aria-label="Typing race" hidden>
         <div class="room-bar">
           <div class="room-details"><button id="copyCode" class="room-code" title="Copy room link"><span id="roomCode"></span><span data-icon="copy"></span></button><span id="playerCount"></span></div>
-          <button id="leaveRoom" class="text-button">leave</button>
+          <button id="restartButton" class="text-button" hidden>request restart</button><button id="leaveRoom" class="text-button">leave</button>
         </div>
         <div class="test-top"><span id="timeLeft" class="timer" hidden>30</span><span id="liveStats" hidden><span id="liveWpm">0</span> wpm <span class="muted">·</span> <span id="liveAccuracy">100</span>%</span></div>
         <div id="waitingArea"><button id="startButton" class="text-button">start race</button></div>
@@ -40,7 +40,7 @@
         <section id="results" aria-label="Race results" hidden>
           <div class="result-numbers"><div><small>wpm</small><strong id="resultWpm">0</strong></div><div><small>accuracy</small><strong id="resultAccuracy">100<span>%</span></strong></div><div><small>place</small><strong id="resultPlace">1<span>/1</span></strong></div></div>
           <div id="leaderboard"></div>
-          <button id="againButton" class="text-button">race again</button>
+          <button id="againButton" class="text-button">play again</button>
         </section>
         <div id="playerList" aria-label="Players"></div>
       </section>

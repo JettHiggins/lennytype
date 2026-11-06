@@ -7,6 +7,7 @@ function database() {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec('PRAGMA foreign_keys=ON');
   sqlite.exec(readFileSync('drizzle/0000_rooms.sql','utf8'));
+  sqlite.exec(readFileSync('drizzle/0001_restart_votes.sql','utf8'));
   const DB = {
     prepare(sql) {
       let args = [];
@@ -122,4 +123,17 @@ test('the Pages origin is allowed, including preflight, while unrelated origins 
   assert.equal(preflight.headers.get('access-control-allow-headers'),'Content-Type');
   assert.equal((await call(DB,'rooms',{},'https://jetthiggins.github.io.evil.example',origin)).status,403);
   sqlite.close();
+});
+test('restart requires unanimous active votes and rejects duplicate and stale votes', async () => {
+ const {DB,sqlite}=database();
+ const host=await call(DB,'create'); const guest=await call(DB,'join',{code:host.room.code});
+ const round=Date.now()-1000;
+ sqlite.prepare('UPDATE rooms SET starts_at=? WHERE code=?').run(round,host.room.code);
+ const vote=await call(DB,'restart',{...creds(host),round});
+ assert.equal(vote.room.starts_at,round); assert.equal(vote.restartVotes.length,1);
+ const duplicate=await call(DB,'restart',{...creds(host),round}); assert.equal(duplicate.restartVotes.length,1);
+ const restarted=await call(DB,'restart',{...creds(guest),round});
+ assert.ok(restarted.room.starts_at>Date.now()); assert.deepEqual(restarted.restartVotes,[]);
+ assert.equal((await call(DB,'restart',{...creds(host),round})).status,409);
+ sqlite.close();
 });
