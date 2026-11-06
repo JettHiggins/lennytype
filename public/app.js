@@ -13,6 +13,7 @@ document.querySelectorAll('[data-icon]').forEach(el => el.innerHTML = icon(el.da
 const escapeHTML = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 const COLORS = ['#e2b714','#bb9af7','#7dc4a5','#f28b82','#7aa2f7','#ed9dcc','#e5b880','#8bd5ca'];
 const anonymousName = 'typist ' + Math.random().toString(36).slice(2,5);
+let restartSupported = false;
 const apiBase = String(window.LENNYTYPE_CONFIG?.apiBase || '').replace(/\/$/, '');
 let settings = { smooth:true, stats:true, theme:'serika' };
 let nickname = 'you';
@@ -154,7 +155,7 @@ function renderPlayers() {
   }).join('');
 }
 function showRoomState() {
-  $('restartButton').hidden = state !== 'racing';
+  $('restartButton').hidden = state !== 'racing' || !restartSupported;
   $('home').hidden = true;
   $('game').hidden = false;
   $('roomCode').textContent = room.code;
@@ -174,6 +175,7 @@ function showRoomState() {
 function applyState(data) {
   if (!session || switching) return;
   if (room && room.starts_at > data.room.starts_at) return;
+  restartSupported = Array.isArray(data.restartVotes);
   clockOffset = data.now - Date.now();
   const previousStart = room?.starts_at;
   room = data.room;
@@ -186,7 +188,7 @@ function applyState(data) {
   }
   showRoomState();
   const votes = data.restartVotes || [];
-  $('restartButton').hidden = state !== 'racing';
+  $('restartButton').hidden = state !== 'racing' || !restartSupported;
   $('restartButton').disabled = votes.includes(session.id);
   $('restartButton').textContent = votes.length ? `restart ${votes.length}/${players.length}${votes.includes(session.id) ? ' · requested' : ' · request'}` : 'request restart';
   updateCarets();
